@@ -1,11 +1,11 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="section_writer",  
+    name="auto_excel",  
     version="0.1.0",  
     author="Logan Lang", 
     author_email="lllang@mix.wvu.edu", 
-    description="This is a package for writing sections of papers.",  
+    description="This is a package for runing script that automate excel workbooks",  
     long_description=open("README.md").read(), 
     long_description_content_type="text/markdown",
     # url="https://github.com/yourusername/your_package_name",  # Replace with your package's URL
