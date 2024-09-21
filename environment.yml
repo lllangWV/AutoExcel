@@ -1,0 +1,25 @@
+name: auto_excel
+channels:
+- defaults
+dependencies:
+- python==3.9.*
+- pip
+- autopep8
+- jupyterlab
+- ipywidgets
+
+- pip:
+  - matplotlib
+  - seaborn
+  - pandas
+  - chromadb
+  - selenium
+  - openpyxl
+  - beautifulsoup4
+  - llama-index
+  - llama-index-vector-stores-chroma
+  - openai
+  - requests
+  - pytest
+  - python-dotenv
+
