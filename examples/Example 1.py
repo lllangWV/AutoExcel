@@ -18,47 +18,15 @@ from llama_index.core.llms import ChatMessage
 from llama_index.experimental.query_engine import PandasQueryEngine
 import pandas as pd
 
-from auto_excel.analysis import extract_disjoint_tables
-
-logger = logging.getLogger(__name__)
-
-logger.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-ch.setFormatter(formatter)
-logger.addHandler(ch)
+from autoexcel.analysis import extract_disjoint_tables
 
 
-def write_llm_query_response(query, response, context=None, output_dir=None, metadata=None):
-    os.makedirs(output_dir, exist_ok=True)
-    
-    with open(os.path.join(output_dir, f'query_reponse.md'), 'w') as f:
-        f.write(f'# Query: \n\n')
-        f.write(f'{query}\n\n')
-        f.write(f'# Response: \n\n')
-        f.write(f'{response}\n\n')
-
-    with open(os.path.join(output_dir, f'query.md'), 'w') as f:
-        f.write(f'# Query: \n\n')
-        f.write(f'{query}\n\n')
-
-    with open(os.path.join(output_dir, f'response.md'), 'w') as f:
-        f.write(f'# Response: \n\n')
-        f.write(f'{response}\n\n')
-
-    if context:
-        with open(os.path.join(output_dir, f'context.md'), 'w') as f:
-            f.write(f'# Context: \n\n')
-            f.write(f'{context}\n\n')
-
-    if metadata:
-        with open(os.path.join(output_dir, f'metadata.json'), 'w') as f:
-            json.dump(metadata, f, indent=4)
-                
 
 def main():
-
+    from autoexcel import config
+    
+    config.logging_config.loggers.autoexcel.level = logging.DEBUG
+    config.apply()
     #########################################################################################
     # Parameters
     file_path = 'C:/Users/lllang/Desktop/Current_Projects/Auto_Excel/data/processed/Data Analysis 9-19-2024.xlsx'
