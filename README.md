@@ -1,13 +1,13 @@
 # Introduction
 
-This is a package for writing sections of papers.
+This is a package for automating tasks in excel workbooks.
 
 # Installation
 
 To install the package, run the following command:
 
 ```bash
-pip install section_writer
+pip install autoexcel
 ```
 
 # Usage
@@ -15,7 +15,7 @@ pip install section_writer
 To use the package, import it:
 
 ```python
-import section_writer
+import autoexcel
 ```
 
 # License

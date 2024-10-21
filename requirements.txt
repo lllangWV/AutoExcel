@@ -1,7 +1,0 @@
-llama-index
-llama-index-llms-anthropic
-pypdf
-python-dotenv
-pandas
-numpy
-matplotlib

@@ -12,7 +12,8 @@ def main():
     # Parameters
     raw_xlsx = os.path.join('data', 'raw', 'Raw Data 9-19-2024.xlsx')
     processed_xlsx = os.path.join('data', 'templates', 'template_processed_workbook.xlsx')
-    processed_dir = os.path.join('data', 'processed')
+    processed_dir = os.path.join('data', 'test')
+    os.makedirs(processed_dir, exist_ok=True)
     assigned_date_filter = [datetime(2023, 7, 1), None]
 
     ################################################################################################
@@ -186,6 +187,7 @@ def copy_excel_worksheet(source_excel_path, target_excel_path, worksheet_names: 
     wb2 = xl.Workbooks.Open(Filename=os.path.abspath(target_excel_path))
     try:
         for worksheet_name in worksheet_names:
+            print("Attempting to copy worksheet", worksheet_name)
             ws1 = wb1.Worksheets(worksheet_name)
             ws1.Copy(Before=wb2.Worksheets(1))
 

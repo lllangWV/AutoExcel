@@ -141,19 +141,31 @@ def main():
     #########################################################################################
     # Example 2:
 
-    query = " I want the know the total assignmnets grouped by delinquency type and negotiator."
-    response = query_engine.query(query)
+    # query = " I want the know the total assignmnets grouped by delinquency type and negotiator."
+    # response = query_engine.query(query)
 
-    write_llm_query_response(query, str(response), output_dir=response_dir, metadata=metadata)
+    # write_llm_query_response(query, str(response), output_dir=response_dir, metadata=metadata)
 
 
 
     #########################################################################################
     # Example 2:
 
-    # query = " I want the number of Executed Agreements by Negotiator for 2204 by month. "
+    # query = """ I want the spread sheet for the active assignments. This is signified by Status, 
+    # this should not include withdrawn, completed, duplicated status"""
     # response = query_engine.query(query)
 
+    # write_llm_query_response(query, str(response), output_dir=response_dir, metadata=metadata)
+
+
+
+    ########################################################################################
+    # Example 3:
+
+    query = """ I want to do an analysis for Time to Assignment and Time to Completion Analysis by Negotiator. 
+    I want to know the average, standard deviation, min, max, and median for both the time to assignment and time to completion for each negotiator."""
+    response = query_engine.query(query)
+    write_llm_query_response(query, str(response), output_dir=response_dir, metadata=metadata)
 
     # print(str(response))
 
