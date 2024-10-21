@@ -31,7 +31,7 @@ dependencies = [
     "variconfig",
     "pandas",
     "beautifulsoup4",
-    "requests"
+    "requests",
     "openpyxl",
     "tabulate"
 ]

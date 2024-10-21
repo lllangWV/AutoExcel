@@ -139,3 +139,5 @@ ENV/
 /data/
 
 /logs/
+
+/my_tests/
