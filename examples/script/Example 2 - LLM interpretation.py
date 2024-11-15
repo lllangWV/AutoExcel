@@ -29,8 +29,8 @@ def main():
     config.apply()
     #########################################################################################
     # Parameters
-    file_path = 'C:/Users/lllang/Desktop/Current_Projects/Auto_Excel/data/processed/Data Analysis 9-19-2024.xlsx'
-    
+    # file_path = 'C:/Users/lllang/Desktop/Current_Projects/Auto_Excel/data/processed/Data Analysis 9-19-2024.xlsx'
+    file_path = os.path.join(config.data_dir, 'fy_analysis', 'processed', 'Data Analysis 9-19-2024.xlsx')
     llm_companys=['anthropic', 'openai']
     llm_company=llm_companys[0]
     if llm_company=='anthropic':

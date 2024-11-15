@@ -1,11 +1,10 @@
-
-import pandas as pd
+import os
+import logging
 
 import pandas as pd
 from openpyxl import load_workbook
 
-from autoexcel import config
-
+logger = logging.getLogger(__name__)
 
 def extract_disjoint_tables(file_path, sheet_name=None):
     # Load the workbook using openpyxl
@@ -103,7 +102,10 @@ def clean_footer(df):
 # Example usage
 
 def main():
-    file_path = os.path.join(config.data_dir,'processed','Data Analysis 9-19-2024.xlsx')
+    
+    from autoexcel import config
+    
+    file_path = os.path.join(config.data_dir,'fy_analysis','processed','Data Analysis 9-19-2024.xlsx')
     
     fy_analytics_tables = extract_disjoint_tables(file_path, sheet_name='FY 24-25 Analytics')
     caseload_analysis_tables = extract_disjoint_tables(file_path, sheet_name='Caseload Analysis')

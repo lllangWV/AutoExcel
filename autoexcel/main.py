@@ -1,5 +1,8 @@
+
+import argparse
 from typing import List
 import os
+import logging
 import traceback
 from datetime import datetime
 
@@ -8,18 +11,14 @@ import numpy as np
 from openpyxl.styles import PatternFill, Font
 from openpyxl.utils import get_column_letter
 
-def main():
-    # Parameters
-    raw_xlsx = os.path.join('data', 'raw', 'Raw Data 9-19-2024.xlsx')
-    processed_xlsx = os.path.join('data', 'templates', 'template_processed_workbook.xlsx')
-    processed_dir = os.path.join('data', 'test')
+from autoexcel import config
+
+
+logger = logging.getLogger(__name__)
+
+def fy_analysis(raw_xlsx, template_xlsx, processed_dir='fy_analysis_processed', assigned_date_filter=[datetime(2023, 7, 1), None]):
     os.makedirs(processed_dir, exist_ok=True)
-    assigned_date_filter = [datetime(2023, 7, 1), None]
-
-    ################################################################################################
-    # Script starts here
-    ################################################################################################
-
+    
     # Read the data from the Excel file
     df = read_data(raw_xlsx)
 
@@ -36,10 +35,10 @@ def main():
     # Copy worksheets
 
     fiscal_year, _ = get_current_fiscal_year()
-    fy_analytics_ws_name= f'FY {str(fiscal_year)[-2:]}-{str(fiscal_year+1)[-2:]} Analytics'
-    copy_excel_worksheet(processed_xlsx, output_filename, worksheet_names=[fy_analytics_ws_name, 'Caseload Analysis'])
+    fy_analytics_ws_name= f'FY {str(fiscal_year-1)[-2:]}-{str(fiscal_year)[-2:]} Analytics'
+    copy_excel_worksheet(template_xlsx, output_filename, worksheet_names=[fy_analytics_ws_name, 'Caseload Analysis'])
 
-    print('Process completed. The processed data has been saved to', output_filename)
+    logger.info(f'Process completed. The processed data has been saved to {output_filename}')
 
 
 def read_data(raw_xlsx):
@@ -49,6 +48,7 @@ def read_data(raw_xlsx):
 
 def preprocess_data(df, assigned_date_filter):
     """Processes the DataFrame according to specified steps."""
+    logger.info('Preprocessing data.')
     df = df.copy()
 
     # Insert sequential numbers
@@ -91,6 +91,7 @@ def preprocess_data(df, assigned_date_filter):
     df_active_assignments = df_original.copy()
     df_active_assignments = df_active_assignments[~df_active_assignments['Status'].isin(['Completed', 'Duplicate', 'Withdrawn'])]
 
+    logger.info('Preprocessing complete.')
     return df_original, df_active_assignments
 
 def get_current_fiscal_year():
@@ -104,9 +105,11 @@ def get_current_fiscal_year():
     return fiscal_year, fiscal_year_start
 
 def filter_assigned_date(df, start_fiscal_year, end_fiscal_year):
+    logger.info('Filtering assigned date.')
     df = df[df['Date Assigned'] >= start_fiscal_year]
     if end_fiscal_year:
         df = df[df['Date Assigned'] < end_fiscal_year]
+    logger.info('Filtering assigned date complete.')
     return df
 
 def networkdays(start_date, end_date):
@@ -128,6 +131,9 @@ def categorize_delinquency(days):
 
 def write_output(df_original, df_active_assignments, output_filename):
     """Writes the processed data to an Excel file with formatting."""
+    
+    logger.info('Writing output to Excel.')
+    
     with pd.ExcelWriter(output_filename, engine='openpyxl') as writer:
         fiscal_year, _ = get_current_fiscal_year()
         fy_sheet_name = f'FY {str(fiscal_year)[-2:]} SharePoint'
@@ -140,9 +146,12 @@ def write_output(df_original, df_active_assignments, output_filename):
         for sheet_name, df in zip([fy_sheet_name, "Active Assignments"], [df_original, df_active_assignments]):
             worksheet = writer.sheets[sheet_name]
             format_worksheet(worksheet, df)
-
+            
+    logger.info("Writing output to Excel complete.")
+    
 def format_worksheet(worksheet, df):
     """Applies formatting to the Excel worksheet."""
+    logger.debug('Formatting worksheet.')
     # Set default row height
     worksheet.sheet_format.defaultRowHeight = 15
 
@@ -175,9 +184,12 @@ def format_worksheet(worksheet, df):
                 cell.fill = orange_fill
             elif delinquency_value == '> 30 Days':
                 cell.fill = yellow_fill
+                
+    logger.debug('Formatting worksheet complete.')
 
 def copy_excel_worksheet(source_excel_path, target_excel_path, worksheet_names: List[str]):
     """Copies worksheets from the source Excel file to the target Excel file."""
+    logger.info('Copying worksheets.')
     from win32com.client import Dispatch
     xl = Dispatch("Excel.Application")
     xl.Visible = False
@@ -185,9 +197,10 @@ def copy_excel_worksheet(source_excel_path, target_excel_path, worksheet_names: 
     fiscal_year, _ = get_current_fiscal_year()
     wb1 = xl.Workbooks.Open(Filename=os.path.abspath(source_excel_path))
     wb2 = xl.Workbooks.Open(Filename=os.path.abspath(target_excel_path))
+    logger.debug(f"Attempting to copy worksheets from {source_excel_path} to {target_excel_path}")
     try:
         for worksheet_name in worksheet_names:
-            print("Attempting to copy worksheet", worksheet_name)
+            logger.info(f"Attempting to copy worksheet {worksheet_name}")
             ws1 = wb1.Worksheets(worksheet_name)
             ws1.Copy(Before=wb2.Worksheets(1))
 
@@ -195,12 +208,42 @@ def copy_excel_worksheet(source_excel_path, target_excel_path, worksheet_names: 
                 ws2 = wb2.Worksheets(worksheet_name)
                 ws2.Name = f'FY {str(fiscal_year)[-2:]}-{str(fiscal_year+1)[-2:]} Analytics'
     except Exception as e:
-        print(e)
-        traceback.print_exc()
+        logger.exception(e)
     finally:
         wb1.Close(SaveChanges=False)
         wb2.Close(SaveChanges=True)
         xl.Quit()
 
+    logger.info('Copying worksheets complete.')
+    
+    
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description="Run AutoExcel processing script.")
+    
+    data_dir=os.path.join(config.data_dir, 'fy_analysis')
+    raw_xlsx = os.path.join(data_dir, 'raw', 'Raw Data 9-19-2024.xlsx')
+    template_xlsx = os.path.join(data_dir, 'templates', 'template_processed_workbook.xlsx')
+    
+    
+    # Add arguments
+    parser.add_argument('--raw_xlsx', type=str, default=raw_xlsx, help="Relative path to the raw Excel file.")
+    parser.add_argument('--template_xlsx', type=str, default=template_xlsx, help="Relative path to the template Excel file.")
+    parser.add_argument('--processed_dir', type=str, default='.', help="The output directory for the processed Excel file.")
+    parser.add_argument('--data_dir', type=str, default=data_dir, help="Path to the data directory.")
+    parser.add_argument('--start_date', type=str, default=None, help="Start date for filtering in YYYY-MM-DD format.")
+    parser.add_argument('--end_date', type=str, default=None, help="End date for filtering in YYYY-MM-DD format.")
+
+    # Parse arguments
+    args = parser.parse_args()
+    
+    if args.start_date:
+        print(*[int(x) for x in args.start_date.split('-')])
+        start_date = datetime(*[int(x) for x in args.start_date.split('-')])
+    
+    end_date=None
+    if args.end_date:
+        end_date = datetime(*[int(x) for x in args.end_date.split('-')])
+        
+    assigned_date_filter=[start_date, end_date]
+
+    fy_analysis(raw_xlsx, template_xlsx, processed_dir=args.processed_dir, assigned_date_filter=assigned_date_filter)
