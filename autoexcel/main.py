@@ -276,6 +276,13 @@ def format_worksheet(worksheet, df):
     # Format header
     title_fill = PatternFill(start_color="C0E6F4", end_color="C0E6F4", fill_type="solid")
     non_bold_font = Font(bold=False)
+    
+    # Apply wrap text to all cells while keeping row height at 15
+    for row in worksheet.iter_rows():
+        for cell in row:
+            cell.alignment = cell.alignment.copy(wrapText=True)
+            cell.parent.row_dimensions[cell.row].height = 15
+            
     for col in range(1, worksheet.max_column + 1):
         cell = worksheet.cell(row=1, column=col)
         cell.fill = title_fill
@@ -298,7 +305,6 @@ def format_worksheet(worksheet, df):
                 cell.fill = orange_fill
             elif delinquency_value == '> 30 Days':
                 cell.fill = yellow_fill
-                
     logger.debug('Formatting worksheet complete.')
 
 def copy_excel_worksheet(source_excel_path, target_excel_path, worksheet_names: List[str]):
