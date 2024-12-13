@@ -450,8 +450,12 @@ def pivot_table(wb: object,
     logger.debug(f"Setting visible rows: {pt_visible_rows}")
     for x in pt_visible_rows:
         logger.debug(f"Setting visible row: {x}")
-        pf = pt_ws.PivotTables(pt_name).PivotFields(x)
-        pf.Orientation = win32c.xlRowField 
+        try:
+            pf = pt_ws.PivotTables(pt_name).PivotFields(x)
+            pf.Orientation = win32c.xlRowField 
+        except Exception as e:
+            logger.debug(e)
+            logger.debug(f"Could not set visible row: {x}")
     
     
     # Show Detail Items. This will show or hide the detail rows in the pivot table
