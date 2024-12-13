@@ -14,6 +14,10 @@ import numpy as np
 from openpyxl.styles import PatternFill, Font
 from openpyxl.utils import get_column_letter
 
+import win32com
+
+shutil.rmtree(win32com.__gen_path__)
+
 import win32com.client as win32
 win32c = win32.constants
 
