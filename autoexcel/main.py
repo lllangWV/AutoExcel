@@ -16,7 +16,8 @@ from openpyxl.utils import get_column_letter
 
 import win32com
 
-shutil.rmtree(win32com.__gen_path__)
+if os.path.exists(win32com.__gen_path__):
+    shutil.rmtree(win32com.__gen_path__)
 
 import win32com.client as win32
 win32c = win32.constants
@@ -152,7 +153,8 @@ def preprocess_data(df, assigned_date_filter):
 
     # Insert sequential numbers
     # df.insert(0, '#', range(1, len(df) + 1))
-    df.insert(0, '#', [1] * len(df))
+    if '#' not in df.columns:
+        df.insert(0, '#', [1] * len(df))
 
     # Add new columns
     new_columns = ['Time to Assignment', 'Time to Execution', "Today's Date", 'Time Since Assignment', 'Delinquency']

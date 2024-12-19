@@ -93,7 +93,7 @@ def main():
     """
     prompt_template = """\
     
-    You are analyzing a financial analytics for a financial year. There are multiple tables with information ranging 
+    You are analyzing a financial analytics for a financial year. There are multiple tables with information ranging
     total assignments by delinqunecy types, Executed Agreements by Negotiator, New Assignments by Negotiator,etc:
 
     You're goal is to provide a in-depth summary report.
