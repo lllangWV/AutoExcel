@@ -185,10 +185,17 @@ def preprocess_data(df, assigned_date_filter):
         if col in df.columns:
             df[col] = df[col].dt.strftime('%m/%d/%Y')
 
+    
+    
     # Sort and categorize
     df = df.sort_values(by='Time Since Assignment', ascending=False)
     df['Delinquency'] = df['Time Since Assignment'].apply(categorize_delinquency)
+    
+    df['is_SharePointError'] = (pd.notna(df['Time to Execution']) & df['Status'].isin(['In Progress', 'Initial Review', 'Out for Signature', 'Other Internal Department', 'Assigned']))
 
+    # Clear Delinquency and Time Since Assignment if SharePoint error detected
+    df.loc[df['is_SharePointError'], ['Delinquency', 'Time Since Assignment']] = None
+    
     # Create copies for different outputs
     df_original = df.copy()
     df_active_assignments = df_original.copy()
@@ -235,7 +242,9 @@ def categorize_delinquency(days):
     elif days >= 30:
         return '> 30 Days'
     else:
-        return '< 30 Days'
+        return ''
+    
+
 
 def write_output(df_original, df_active_assignments, output_filename):
     """Writes the processed data to an Excel file with formatting."""
@@ -724,7 +733,7 @@ def create_fy_analytics_ws(wb, old_negotiators = None):
     visible_items = {'Negotiator': [('Abigail Gallagher', False), ('Eric Divito', False), 
                                     ('Eric Winaught', False), ('Jillian Corbett', False), ('Huron – New', False)],
                     'FE Date': [('(blank)', False)],
-                    'High Priority': [('(blank)', False)]}
+                    'High Priority': [('(blank)', True)]}
 
     prev_width, prev_height = pivot_table(wb, ws_active, ws2, ws2_name, pt_name, pt_rows, pt_cols, pt_filters, pt_fields, 
                                         start_row=current_row, start_col=current_col, 
