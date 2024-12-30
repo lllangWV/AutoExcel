@@ -191,7 +191,7 @@ def preprocess_data(df, assigned_date_filter):
     df = df.sort_values(by='Time Since Assignment', ascending=False)
     df['Delinquency'] = df['Time Since Assignment'].apply(categorize_delinquency)
     
-    df['is_SharePointError'] = (pd.notna(df['Time to Execution']) & df['Status'].isin(['In Progress', 'Initial Review', 'Out for Signature', 'Other Internal Department', 'Assigned']))
+    df['is_SharePointError'] = (pd.notna(df['Time to Execution']) & df['Status'].isin(['In Progress', 'Initial Review', 'Out for Signature', 'Other Internal Department', 'Assigned', "Out for Redline"]))
 
     # Clear Delinquency and Time Since Assignment if SharePoint error detected
     df.loc[df['is_SharePointError'], ['Delinquency', 'Time Since Assignment']] = None
@@ -236,11 +236,13 @@ def categorize_delinquency(days):
     if pd.isnull(days):
         return None
     elif days >= 90:
-        return '> 90 Days'
+        return '>= 90 Days'
     elif days >= 60:
-        return '> 60 Days'
+        return '>= 60 Days'
     elif days >= 30:
-        return '> 30 Days'
+        return '>= 30 Days'
+    elif days < 30:
+        return '< 30 Days'
     else:
         return ''
     
@@ -307,19 +309,21 @@ def format_worksheet(worksheet, df):
     red_fill = PatternFill(start_color='FFFF0000', end_color='FFFF0000', fill_type='solid')
     orange_fill = PatternFill(start_color='FFFFA500', end_color='FFFFA500', fill_type='solid')
     yellow_fill = PatternFill(start_color='FFFFFF00', end_color='FFFFFF00', fill_type='solid')
-
+    white_fill = PatternFill(start_color='FFFFFFFF', end_color='FFFFFFFF', fill_type='solid')
     if 'Delinquency' in df.columns:
         delinquency_col_idx = df.columns.get_loc('Delinquency') + 1
         delinquency_col_letter = get_column_letter(delinquency_col_idx)
 
         for idx, cell in enumerate(worksheet[delinquency_col_letter][1:], start=2):
             delinquency_value = cell.value
-            if delinquency_value == '> 90 Days':
+            if delinquency_value == '>= 90 Days':
                 cell.fill = red_fill
-            elif delinquency_value == '> 60 Days':
+            elif delinquency_value == '>= 60 Days':
                 cell.fill = orange_fill
-            elif delinquency_value == '> 30 Days':
+            elif delinquency_value == '>= 30 Days':
                 cell.fill = yellow_fill
+            elif delinquency_value == '< 30 Days':
+                cell.fill = white_fill
     logger.debug('Formatting worksheet complete.')
 
 def copy_excel_worksheet(source_excel_path, target_excel_path, worksheet_names: List[str]):
